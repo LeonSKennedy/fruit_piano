@@ -30,30 +30,32 @@ if not cap.begin():
     print('Error initializing MPR121.  Check your wiring!')
     sys.exit(1)
 
-print('Press Ctrl-C to quit.')
+try:
+    while True:
+	    current_touched = cap.touched()
+	    # Check each pin's last and current state to see if it was pressed or released.
+	    for i in range(12):
+       		 # Each pin is represented by a bit in the touched value.  A value of 1
+       		 # means the pin is being touched, and 0 means it is not being touched.
+        	pin_bit = 1 << i
+        	# First check if transitioned from not touched to touched.
+        	if current_touched & pin_bit and not last_touched & pin_bit:
+            		print(i)
+            		song = "./sfx/" + source_folder + "/" + str(i) + ".mp3"
 
-while True:
-    current_touched = cap.touched()
-    # Check each pin's last and current state to see if it was pressed or released.
-    for i in range(12):
-        # Each pin is represented by a bit in the touched value.  A value of 1
-        # means the pin is being touched, and 0 means it is not being touched.
-        pin_bit = 1 << i
-        # First check if transitioned from not touched to touched.
-        if current_touched & pin_bit and not last_touched & pin_bit:
-            print(i)
+            		# load the song
+            		pygame.mixer.music.load(song)
 
-            song = "./sfx/" + source_folder + "/" + str(i) + ".mp3"
+            		# play the song
+            		pygame.mixer.music.play(1)
 
-            # load the song
-            pygame.mixer.music.load(song)
+	    # Update last state and wait a short period before repeating.
+	    last_touched = current_touched
 
-            # play the song
-            pygame.mixer.music.play(1)
-
-        # Next check if transitioned from touched to not touched.
-        # if not current_touched & pin_bit and last_touched & pin_bit:
-        #     print('{0} released!'.format(i))
-    # Update last state and wait a short period before repeating.
-    last_touched = current_touched
-    #time.sleep(0.01)
+except KeyboardInterrupt:
+    # kill the jukebox if the user hits ctrl+c
+    print("""
+==============================
+      FRUIT PIANO! OUT!
+==============================
+    """)
