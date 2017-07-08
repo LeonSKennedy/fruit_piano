@@ -20,10 +20,11 @@ cap = MPR121.MPR121()
 
 # LET THERE BE MUSIC!
 pygame.init()
-pygame.mixer.pre_init(44100, -16, 12, 512)
+pygame.mixer.pre_init(44100, -16, 12, 2048)
 pygame.mixer.init()
 volume = 1
 pygame.mixer.music.set_volume(volume)
+source_folder = "funny"
 
 if not cap.begin():
     print('Error initializing MPR121.  Check your wiring!')
@@ -42,7 +43,7 @@ while True:
         if current_touched & pin_bit and not last_touched & pin_bit:
             print(i)
 
-            song = "./sfx/drums/" + str(i) + ".mp3"
+            song = "./sfx/" + source_folder + "/" + str(i) + ".mp3"
 
             # load the song
             pygame.mixer.music.load(song)
@@ -55,4 +56,4 @@ while True:
         #     print('{0} released!'.format(i))
     # Update last state and wait a short period before repeating.
     last_touched = current_touched
-    time.sleep(0.01)
+    #time.sleep(0.01)
