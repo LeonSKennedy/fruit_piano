@@ -4,11 +4,10 @@
 import os, random
 import pygame
 import time
-from sys import exit
+import sys
 import signal
+from gpiozero import Button
 import Adafruit_MPR121.MPR121 as MPR121
-
-
 
 print("""
 ==============================
@@ -19,23 +18,39 @@ print("""
 # LET THERE BE FEELINGS!
 cap = MPR121.MPR121()
 
-if not cap.begin():
-    print('Error initializing MPR121.  Check your wiring!')
-    sys.exit(1)
-
 # LET THERE BE MUSIC!
 pygame.init()
 pygame.mixer.pre_init(44100, -16, 12, 2048)
 pygame.mixer.init()
 volume = 1
 pygame.mixer.music.set_volume(volume)
-source_folder = "drums"
-tracks = ["drums", "synths", "farts", "funny"]
+source_folder = "synths"
+channels = ["drumkit", "percussion", "synths", "farts", "funny"]
+num_channels = len(channels) - 1
+current_channel = 0
+
+# LET DECISIONS HAPPEN!
+def say_hello():
+    global current_channel
+    next_channel = current_channel + 1
+
+    if(next_channel > num_channels):
+        next_channel = 0
+
+    current_channel = next_channel
+    print("channel: " + str(current_channel) + " / " + channels[current_channel])
+
+# pin, pull_up=True, bounce_time=None
+button = Button(22, True, 0.001)
+button.when_pressed = say_hello
 
 
-
+if not cap.begin():
+    print('Error initializing MPR121.  Check your wiring!')
+    exit(1)
 
 try:
+
     while True:
 
         current_touched = cap.touched()
@@ -50,7 +65,8 @@ try:
             # First check if transitioned from not touched to touched.
             if current_touched & pin_bit and not last_touched & pin_bit:
 
-                print(i)
+                source_folder = channels[current_channel]
+                print("Sample: " + str(i))
                 song = "/home/pi/fruit_piano/sfx/" + source_folder + "/" + str(i) + ".mp3"
 
                 # load the song
@@ -66,7 +82,7 @@ try:
 except KeyboardInterrupt:
     # kill the piano if the user hits ctrl+c
     print("""
-    ==============================
-    FRUIT PIANO! OUT!
-    ==============================
+==============================
+FRUIT PIANO! OUT!
+==============================
     """)
