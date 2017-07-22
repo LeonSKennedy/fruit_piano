@@ -1,4 +1,5 @@
-# fruit_piano
-fruit piano for raspberry pi using adafruit capacitive touch hat
+# Fruit Piano
 
-includes a selection of fun sound effects. Each set has 11 samples, the 12 button changes between sets
+Simple Fruit Piano for Raspberry Pi and Adafruit Capacitive Touch Hat. Powered by Python and Pygame. Largely based on the example code for the Adafruit Capacitive Touch Hat.
+
+Includes a selection of fun sound effects. Each set has 11 samples, the 12 button changes between sets
