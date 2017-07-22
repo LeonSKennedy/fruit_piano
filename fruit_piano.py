@@ -20,7 +20,7 @@ pygame.mixer.init()
 volume = 1
 pygame.mixer.music.set_volume(volume)
 source_folder = "synths"
-channels = ["drumkit", "percussion", "synths", "farts", "funny", "piano"]
+channels = ["drumkit", "percussion", "synths", "farts", "funny", "piano", "animals"]
 num_channels = len(channels) - 1
 current_channel = 0
 
