@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, random
 import pygame
-import time
-import sys
-import signal
-from gpiozero import Button
 import Adafruit_MPR121.MPR121 as MPR121
 
 print("""
@@ -25,12 +20,12 @@ pygame.mixer.init()
 volume = 1
 pygame.mixer.music.set_volume(volume)
 source_folder = "synths"
-channels = ["drumkit", "percussion", "synths", "farts", "funny"]
+channels = ["drumkit", "percussion", "synths", "farts", "funny", "piano"]
 num_channels = len(channels) - 1
 current_channel = 0
 
 # LET DECISIONS HAPPEN!
-def say_hello():
+def change_sounds():
     global current_channel
     next_channel = current_channel + 1
 
@@ -39,10 +34,6 @@ def say_hello():
 
     current_channel = next_channel
     print("channel: " + str(current_channel) + " / " + channels[current_channel])
-
-# pin, pull_up=True, bounce_time=None
-button = Button(22, True, 0.001)
-button.when_pressed = say_hello
 
 
 if not cap.begin():
@@ -65,16 +56,18 @@ try:
             # First check if transitioned from not touched to touched.
             if current_touched & pin_bit and not last_touched & pin_bit:
 
-                source_folder = channels[current_channel]
-                print("Sample: " + str(i))
-                song = "/home/pi/fruit_piano/sfx/" + source_folder + "/" + str(i) + ".mp3"
+                if(i == 11):
 
-                # load the song
-                pygame.mixer.music.load(song)
+                    change_sounds()
 
-                # play the song
-                pygame.mixer.music.stop()
-                pygame.mixer.music.play(1)
+                else:
+
+                    source_folder = channels[current_channel]
+                    print("Sample: " + str(i))
+                    song = "/home/pi/fruit_piano/sfx/" + source_folder + "/" + str(i) + ".ogg"
+
+                    sound = pygame.mixer.Sound(song)
+                    sound.play(0)
 
         # Update last state and wait a short period before repeating.
         last_touched = current_touched
