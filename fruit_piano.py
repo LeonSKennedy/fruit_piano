@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import pygame
-import Adafruit_MPR121.MPR121 as MPR121
+import signal
+import sys
+from time import sleep
+import MPR121
 
 print("""
 ==============================
@@ -10,8 +13,28 @@ print("""
 ==============================
 """)
 
-# LET THERE BE FEELINGS!
-cap = MPR121.MPR121()
+try:
+  sensor = MPR121.begin()
+except Exception as e:
+  print e
+  sys.exit(1)
+
+
+# this is the touch threshold - setting it low makes it more like a proximity trigger default value is 40 for touch
+touch_threshold = 40
+
+# this is the release threshold - must ALWAYS be smaller than the touch threshold default value is 20 for touch
+release_threshold = 20
+
+# set the thresholds
+sensor.set_touch_threshold(touch_threshold)
+sensor.set_release_threshold(release_threshold)
+
+# handle ctrl+c gracefully
+def signal_handler(signal, frame):
+  sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 # LET THERE BE MUSIC!
 pygame.init()
@@ -36,41 +59,31 @@ def change_sounds():
     print("channel: " + str(current_channel) + " / " + channels[current_channel])
 
 
-if not cap.begin():
-    print('Error initializing MPR121.  Check your wiring!')
-    exit(1)
+
 
 try:
 
     while True:
-
-        current_touched = cap.touched()
-
-        # Check each pin's last and current state to see if it was pressed or released.
+      if sensor.touch_status_changed():
+        sensor.update_touch_data()
         for i in range(12):
 
-            # Each pin is represented by a bit in the touched value.  A value of 1
-            # means the pin is being touched, and 0 means it is not being touched.
-            pin_bit = 1 << i
+          if sensor.is_new_touch(i):
 
-            # First check if transitioned from not touched to touched.
-            if current_touched & pin_bit and not last_touched & pin_bit:
+              if(i == 11):
 
-                if(i == 11):
+                  change_sounds()
 
-                    change_sounds()
+              else:
 
-                else:
+                  source_folder = channels[current_channel]
+                  print("Sample: " + str(i))
+                  song = "/home/pi/fruit_piano/sfx/" + source_folder + "/" + str(i) + ".ogg"
 
-                    source_folder = channels[current_channel]
-                    print("Sample: " + str(i))
-                    song = "/home/pi/fruit_piano/sfx/" + source_folder + "/" + str(i) + ".ogg"
+                  sound = pygame.mixer.Sound(song)
+                  sound.play(0)
 
-                    sound = pygame.mixer.Sound(song)
-                    sound.play(0)
-
-        # Update last state and wait a short period before repeating.
-        last_touched = current_touched
+      sleep(0.1)
 
 except KeyboardInterrupt:
     # kill the piano if the user hits ctrl+c
