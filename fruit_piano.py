@@ -6,6 +6,7 @@ import signal
 import sys
 from time import sleep
 import MPR121
+import RPi.GPIO as GPIO
 
 print("""
 ==============================
@@ -47,6 +48,30 @@ channels = ["drumkit", "percussion", "synths", "farts", "funny", "piano", "anima
 num_channels = len(channels) - 1
 current_channel = 0
 
+## LED magic
+red_led_pin = 6
+green_led_pin = 5
+blue_led_pin = 26
+
+# init GPIO using BCM pinout
+# look here for more info on pins: http://pinout.xyz
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+# set up color pins as outputs
+GPIO.setup(red_led_pin, GPIO.OUT)
+GPIO.setup(green_led_pin, GPIO.OUT)
+GPIO.setup(blue_led_pin, GPIO.OUT)
+
+def light_rgb(r, g, b):
+  # we are inverting the values, because the LED is active LOW
+  # LOW - on
+  # HIGH - off
+  GPIO.output(red_led_pin, not r)
+  GPIO.output(green_led_pin, not g)
+  GPIO.output(blue_led_pin, not b)
+
+
 # LET DECISIONS HAPPEN!
 def change_sounds():
     global current_channel
@@ -72,9 +97,14 @@ try:
 
               if(i == 11):
 
+                  light_rgb(0,0,255)
                   change_sounds()
 
+                  sleep(0.5)
+
               else:
+
+                  light_rgb(0,255,0)
 
                   source_folder = channels[current_channel]
                   print("Sample: " + str(i))
@@ -83,7 +113,8 @@ try:
                   sound = pygame.mixer.Sound(song)
                   sound.play(0)
 
-      sleep(0.1)
+      sleep(0.01)
+      light_rgb(0,0,0)
 
 except KeyboardInterrupt:
     # kill the piano if the user hits ctrl+c
